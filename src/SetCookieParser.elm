@@ -12,6 +12,7 @@ type alias SetCookie =
 
 
 
+-- NAME-VALUE
 -- Each cookie begins with a name-value-pair, followed by zero or more attribute-value pairs.
 -- The (possibly empty) name string consists of the characters up
 -- to, but not including, the first %x3D ("=") character, and the
@@ -47,6 +48,36 @@ value =
         |. spaces
         |= zeroOrMore (\c -> notReserved c && not (isSpace c))
         |. spaces
+
+
+
+-- ATTRIBUTES
+
+
+type Attribute
+    = Expires String
+
+
+
+-- Loop until no ';' at the end
+-- Ignore unrecognised attributes
+-- Handle each attribute separately
+
+
+attributes =
+    identity
+
+
+attribute : Parser Attribute
+attribute =
+    succeed Attribute
+        -- Skip first ';'
+        |. ';'
+
+
+
+-- Consume and parse the middle part, e.g. EXPIRES=3615
+-- GENERAL
 
 
 notReserved : Char -> Bool

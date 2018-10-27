@@ -124,6 +124,40 @@ suite =
                         |> Expect.equal (Result.Ok expected)
                 )
             ]
+        , describe "cookie-av (Attributes)"
+            [ describe "If the cookie-av string contains a = character"
+                [ describe "The (possibly empty) attribute-name string consists of the characters up to, but not including, the first = character, and the (possibly empty) attribute-value string consists of the characters after the first = character."
+                    [ test "; Max-Age=615"
+                    ]
+                ]
+            , describe "If the cookie-av string does not contain a = character"
+                [ describe "The attribute-name string consists of the entire cookie-av string, and the attribute-value string is empty."
+                    [ test "; HttpOnly"
+                    ]
+                ]
+            ]
+        , describe "Remove any leading or trailing WSP characters from the attribute-name string and the attribute-value string."
+            [ test ";   Max-Age = 615  " ]
+        , describe "Attributes with unrecognized attribute-names are ignored"
+            [ test "; UnrecognisedAttribute=615"
+            ]
+        , describe "The Expires Attribute"
+            [ test "Parses ; Expires=31688000"
+            , test "Parses ; expires=31688000"
+            , test "Ignores invalid date"
+            ]
+        , describe "The Max-Age Attribute"
+            [ test "Parses ; Max-Age=DIGIT"
+            , test "Parses ; max-age=DIGIT"
+
+            -- That means Nothing
+            , test "Ignores non-DIGIT value"
+            , test "Ignores invalid date"
+            ]
+        , describe "The Domain Attribute" []
+        , describe "The Path Attribute" []
+        , describe "The Secure Attribute" []
+        , describe "The HttpOnly Attribute" []
         ]
 
 
