@@ -36,19 +36,28 @@ nameValue =
 name : Parser String
 name =
     succeed identity
-        |= zeroOrMore notReserved
+        |. spaces
+        |= zeroOrMore (\c -> notReserved c && not (isSpace c))
+        |. spaces
 
 
 value : Parser String
 value =
     succeed identity
-        |= zeroOrMore notReserved
+        |. spaces
+        |= zeroOrMore (\c -> notReserved c && not (isSpace c))
+        |. spaces
 
 
 notReserved : Char -> Bool
 notReserved c =
     not (isEqualSign c)
         && not (isSemi c)
+
+
+isSpace : Char -> Bool
+isSpace c =
+    c == ' ' || c == '\n' || c == '\u{000D}'
 
 
 isEqualSign : Char -> Bool

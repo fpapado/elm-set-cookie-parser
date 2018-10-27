@@ -114,5 +114,17 @@ suite =
                     Parser.run SetCookieParser.nameValue input
                         |> Expect.equal (Result.Ok expected)
                 )
+            , test "Removes any leading or trailing WSP characters from the name string and the value string."
+                (\_ ->
+                    let
+                        input =
+                            "  count  =  100  "
+
+                        expected =
+                            { name = "count", value = "100" }
+                    in
+                    Parser.run SetCookieParser.nameValue input
+                        |> Expect.equal (Result.Ok expected)
+                )
             ]
         ]
