@@ -1,0 +1,17 @@
+{
+  "name": "elm-set-cookie-parser",
+  "version": "1.0.0",
+  "description": "",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "elm-test"
+  },
+  "author": "Fotis Papadogeorgopoulos (@fpapado)",
+  "license": "BSD",
+  "dependencies": {
+    "elm": "^0.19.0-bugfix2",
+    "elm-test": "^0.19.0-beta11"
+  }
+}
