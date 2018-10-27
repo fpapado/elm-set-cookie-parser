@@ -37,7 +37,7 @@ name : Parser String
 name =
     succeed identity
         |. spaces
-        |= zeroOrMore (\c -> notReserved c && not (isSpace c))
+        |= oneOrMore (\c -> notReserved c && not (isSpace c))
         |. spaces
 
 

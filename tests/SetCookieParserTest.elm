@@ -41,14 +41,6 @@ suite =
                     let
                         input =
                             "count 100"
-
-                        isErr res =
-                            case res of
-                                Ok _ ->
-                                    False
-
-                                Err _ ->
-                                    True
                     in
                     Parser.run SetCookieParser.nameValue input
                         |> isErr
@@ -66,30 +58,47 @@ suite =
                     Parser.run SetCookieParser.nameValue input
                         |> Expect.equal (Result.Ok expected)
                 )
-            , test "=value"
-                (\_ ->
-                    let
-                        input =
-                            "=100"
+            , describe "If the name string is empty, ignore the set-cookie-string entirely."
+                [ test "Rejects =value"
+                    (\_ ->
+                        let
+                            input =
+                                "=100"
 
-                        expected =
-                            { name = "", value = "100" }
-                    in
-                    Parser.run SetCookieParser.nameValue input
-                        |> Expect.equal (Result.Ok expected)
-                )
-            , test "=value;"
-                (\_ ->
-                    let
-                        input =
-                            "=100;"
+                            expected =
+                                { name = "", value = "100" }
+                        in
+                        Parser.run SetCookieParser.nameValue input
+                            |> isErr
+                            |> Expect.true "Expected the parse to be rejected"
+                    )
+                , test "Rejects =value;"
+                    (\_ ->
+                        let
+                            input =
+                                "=100;"
 
-                        expected =
-                            { name = "", value = "100" }
-                    in
-                    Parser.run SetCookieParser.nameValue input
-                        |> Expect.equal (Result.Ok expected)
-                )
+                            expected =
+                                { name = "", value = "100" }
+                        in
+                        Parser.run SetCookieParser.nameValue input
+                            |> isErr
+                            |> Expect.true "Expected the parse to be rejected"
+                    )
+                , test "Rejects ="
+                    (\_ ->
+                        let
+                            input =
+                                "="
+
+                            expected =
+                                { name = "", value = "" }
+                        in
+                        Parser.run SetCookieParser.nameValue input
+                            |> isErr
+                            |> Expect.true "Expected the parse to be rejected"
+                    )
+                ]
             , test "name=;"
                 (\_ ->
                     let
@@ -98,18 +107,6 @@ suite =
 
                         expected =
                             { name = "count", value = "" }
-                    in
-                    Parser.run SetCookieParser.nameValue input
-                        |> Expect.equal (Result.Ok expected)
-                )
-            , test "="
-                (\_ ->
-                    let
-                        input =
-                            "="
-
-                        expected =
-                            { name = "", value = "" }
                     in
                     Parser.run SetCookieParser.nameValue input
                         |> Expect.equal (Result.Ok expected)
@@ -128,3 +125,17 @@ suite =
                 )
             ]
         ]
+
+
+
+-- UTIL
+
+
+isErr : Result error data -> Bool
+isErr res =
+    case res of
+        Ok _ ->
+            False
+
+        Err _ ->
+            True
