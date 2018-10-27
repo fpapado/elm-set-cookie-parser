@@ -13,6 +13,10 @@ type alias SetCookie =
 
 
 -- Each cookie begins with a name-value-pair, followed by zero or more attribute-value pairs.
+-- The (possibly empty) name string consists of the characters up
+-- to, but not including, the first %x3D ("=") character, and the
+-- (possibly empty) value string consists of the characters after
+-- the first %x3D ("=") character.
 
 
 type alias NameValue =
@@ -32,23 +36,29 @@ nameValue =
 name : Parser String
 name =
     succeed identity
-        |= oneOrMore notReserved
+        |= zeroOrMore notReserved
 
 
 value : Parser String
 value =
     succeed identity
-        |= oneOrMore notReserved
+        |= zeroOrMore notReserved
 
 
 notReserved : Char -> Bool
-notReserved =
-    not << isEqualSign
+notReserved c =
+    not (isEqualSign c)
+        && not (isSemi c)
 
 
 isEqualSign : Char -> Bool
 isEqualSign char =
     char == '='
+
+
+isSemi : Char -> Bool
+isSemi char =
+    char == ';'
 
 
 run =
