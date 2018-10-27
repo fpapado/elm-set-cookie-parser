@@ -36,6 +36,24 @@ suite =
                     Parser.run SetCookieParser.nameValue input
                         |> Expect.equal (Result.Ok expected)
                 )
+            , test "Fails if = is not present"
+                (\_ ->
+                    let
+                        input =
+                            "count 100"
+
+                        isErr res =
+                            case res of
+                                Ok _ ->
+                                    False
+
+                                Err _ ->
+                                    True
+                    in
+                    Parser.run SetCookieParser.nameValue input
+                        |> isErr
+                        |> Expect.true "Expected the header parse to be rejected"
+                )
             , test "name=value;"
                 (\_ ->
                     let
