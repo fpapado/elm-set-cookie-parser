@@ -191,7 +191,21 @@ suite =
             --     ]
             -- , describe "The Domain Attribute" []
             -- , describe "The Path Attribute" []
-            -- , describe "The Secure Attribute" []
+            , describe "The Secure Attribute"
+                [ test "Parses ; Secure"
+                    (\_ ->
+                        let
+                            input =
+                                "; Secure"
+
+                            expected =
+                                SetCookieParser.Secure
+                        in
+                        Parser.run SetCookieParser.attribute input
+                            |> Expect.equal (Result.Ok expected)
+                    )
+                ]
+
             -- , describe "The HttpOnly Attribute" []
             ]
         ]

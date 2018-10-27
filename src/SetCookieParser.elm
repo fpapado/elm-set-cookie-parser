@@ -23,10 +23,13 @@ import Set
 type alias SetCookie =
     { name : String
     , value : String
+
+    -- , attributes: List Attribute
     }
 
 
 
+-- setCookie : Parser SetCookie
 -- NAME-VALUE
 -- Each cookie begins with a name-value-pair, followed by zero or more attribute-value pairs.
 -- The (possibly empty) name string consists of the characters up
@@ -67,10 +70,19 @@ value =
 
 
 -- ATTRIBUTES
+-- NOTE: Technically, both Expires and Max-Age are an expiry-time.
+-- Takes into account the current time +/- the Max-Age for Max-Age.
+-- This seems more a responsibility of the UA/application than the parser :)
+-- @see: https://tools.ietf.org/html/rfc6265#section-5.2.2
 
 
 type Attribute
     = Expires String
+    | MaxAge Int
+    | Domain String
+    | Path String
+    | Secure
+    | HttpOnly
 
 
 
@@ -94,10 +106,32 @@ attribute =
                     "expires" ->
                         expires
 
+                    "max-age" ->
+                        maxAge
+
+                    "domain" ->
+                        domain
+
+                    "path" ->
+                        path
+
+                    "secure" ->
+                        secure
+
+                    "httponly" ->
+                        httpOnly
+
                     -- TODO: Unknown: ignore the whole thing
                     _ ->
                         problem "I don't know how to parse that attribute yet..."
             )
+        -- NOTE: This bit does nothing for "Expires", because we must parse the date to prevent dangling spaces
+        -- TODO: Consider whether this is the best place to handle these spaces
+        |> Parser.andThen (\a -> succeed a |. spaces)
+
+
+
+-- EXPIRES
 
 
 expires : Parser Attribute
@@ -107,8 +141,101 @@ expires =
         |. symbol "="
         |. spaces
         |= oneOrMore (\c -> notReserved c)
-        -- NOTE: This bit does nothing atm, because we must parse the date to prevent dangling spaces
+
+
+
+-- MAX-AGE
+
+
+maxAge : Parser Attribute
+maxAge =
+    succeed MaxAge
         |. spaces
+        |. symbol "="
+        |. spaces
+        |= oneOf
+            [ int
+
+            -- TODO: If not an int, we should ignore and chomp until the end.
+            -- How do we represent that? With a Maybe? Or something else?
+            , problem "I was expecting a DIGIT. Ignoring the attribute-value when the value is not a digit has not yet been implemented."
+            ]
+
+
+
+-- DOMAIN
+
+
+domain : Parser Attribute
+domain =
+    succeed Domain
+        |. spaces
+        |. symbol "="
+        |. spaces
+        |= oneOrMore (\c -> notReserved c)
+        |> Parser.map (mapDomain normaliseCookieDomain)
+
+
+
+-- If the first character of the attribute-value string is %x2E ("."):
+--  Let cookie-domain be the attribute-value without the leading %x2E
+--  (".") character.
+-- Otherwise:
+--   Let cookie-domain be the entire attribute-value
+-- Convert the cookie-domain to lower case.
+
+
+normaliseCookieDomain : String -> String
+normaliseCookieDomain str =
+    (case String.left 1 str of
+        "." ->
+            String.dropLeft 1 str
+
+        _ ->
+            str
+    )
+        |> String.toLower
+
+
+mapDomain fn attr =
+    case attr of
+        Domain str ->
+            Domain (fn str)
+
+        _ ->
+            attr
+
+
+
+-- PATH
+
+
+path : Parser Attribute
+path =
+    succeed Path
+        |. spaces
+        |. symbol "="
+        |. spaces
+        -- TODO: Check that "" is given if it is empty
+        |= oneOrMore (\c -> notReserved c)
+
+
+
+-- SECURE
+
+
+secure : Parser Attribute
+secure =
+    succeed Secure
+
+
+
+-- HttpOnly
+
+
+httpOnly : Parser Attribute
+httpOnly =
+    succeed HttpOnly
 
 
 
@@ -138,6 +265,11 @@ isSemi char =
 
 run =
     Parser.run nameValue
+
+
+ignoreToSemi =
+    succeed ()
+        |. oneOrMore (not << isSemi)
 
 
 
