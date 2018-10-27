@@ -1,7 +1,22 @@
-module SetCookieParser exposing (NameValue, SetCookie, nameValue, run)
+module SetCookieParser exposing (Attribute(..), NameValue, SetCookie, attribute, nameValue, run)
 
 import Char
-import Parser exposing ((|.), (|=), Parser, chompIf, chompWhile, getChompedString, int, spaces, succeed, symbol, variable)
+import Parser
+    exposing
+        ( (|.)
+        , (|=)
+        , Parser
+        , chompIf
+        , chompWhile
+        , getChompedString
+        , int
+        , oneOf
+        , problem
+        , spaces
+        , succeed
+        , symbol
+        , variable
+        )
 import Set
 
 
@@ -70,13 +85,33 @@ attributes =
 
 attribute : Parser Attribute
 attribute =
-    succeed Attribute
-        -- Skip first ';'
-        |. ';'
+    succeed identity
+        |. symbol ";"
+        |= name
+        |> Parser.andThen
+            (\an ->
+                case String.toLower an of
+                    "expires" ->
+                        expires
+
+                    -- TODO: Unknown: ignore the whole thing
+                    _ ->
+                        problem "I don't know how to parse that attribute yet..."
+            )
+
+
+expires : Parser Attribute
+expires =
+    succeed Expires
+        |. spaces
+        |. symbol "="
+        |. spaces
+        |= oneOrMore (\c -> notReserved c)
+        -- NOTE: This bit does nothing atm, because we must parse the date to prevent dangling spaces
+        |. spaces
 
 
 
--- Consume and parse the middle part, e.g. EXPIRES=3615
 -- GENERAL
 
 
