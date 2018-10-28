@@ -236,8 +236,27 @@ suite =
                                 [ SetCookieParser.MaxAge 12345, SetCookieParser.HttpOnly ]
                             }
                     in
-                    SetCookieParser.run input
+                    SetCookieParser.fromString input
                         |> Expect.equal (Result.Ok expected)
+                )
+            ]
+        , describe "toString"
+            [ test "Serialises count=300; Max-Age=12345; HttpOnly"
+                -- NOTE/TODO: The order shouldn't matter here...
+                (\_ ->
+                    let
+                        input =
+                            { name = "count"
+                            , value = "300"
+                            , attributes =
+                                [ SetCookieParser.MaxAge 12345, SetCookieParser.HttpOnly ]
+                            }
+
+                        expected =
+                            "count=300; HttpOnly; Max-Age=12345"
+                    in
+                    SetCookieParser.toString input
+                        |> Expect.equal expected
                 )
             ]
         ]

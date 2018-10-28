@@ -1,6 +1,7 @@
-module SetCookieParser exposing (Attribute(..), NameValue, SetCookie, attribute, attributes, nameValue, parser, run)
+module SetCookieParser exposing (Attribute(..), NameValue, SetCookie, attribute, attributes, fromString, nameValue, parser, toString)
 
 import Char
+import Debug
 import Parser
     exposing
         ( (|.)
@@ -30,7 +31,68 @@ type alias SetCookie =
 
 
 
--- TODO: Multi
+-- TODO: fromMultiString
+-- TODO: toString
+
+
+{-| Attempt to convert a String representation of a Set-Cookie Header to a SetCookie
+-}
+fromString : String -> Result (List Parser.DeadEnd) SetCookie
+fromString =
+    Parser.run parser
+
+
+{-| Attempt to convert a string representation of a series of Set-Cookie Headers to a list of SetCookie
+NOTE: If the Set-Cookie Header strings are already separate, it is recommended that you use fromString multiple times instead.
+TODO: Decide whether it should be Result x (List SetCookie) or List (Result x SetCookie)
+-}
+fromMultiString : String -> Result (List Parser.DeadEnd) (List SetCookie)
+fromMultiString =
+    Debug.todo "Not yet implemented"
+
+
+{-| Serialise a SetCookie to a Set-Cookie Header string
+-}
+toString : SetCookie -> String
+toString sc =
+    let
+        cookieNameValue =
+            formatNameValue sc.name sc.value
+
+        cookieAttributes =
+            List.map attributeToString sc.attributes
+                |> joinPrepend "; "
+    in
+    cookieNameValue ++ cookieAttributes
+
+
+formatNameValue a b =
+    a ++ "=" ++ b
+
+
+attributeToString attr =
+    case attr of
+        Expires str ->
+            formatNameValue "Expires" str
+
+        MaxAge int ->
+            formatNameValue "Max-Age" (String.fromInt int)
+
+        Domain str ->
+            formatNameValue "Domain" str
+
+        Path str ->
+            formatNameValue "Path" str
+
+        Secure ->
+            "Secure"
+
+        HttpOnly ->
+            "HttpOnly"
+
+
+
+-- PARSER INTERNALS
 
 
 parser : Parser SetCookie
@@ -287,10 +349,6 @@ isSemi char =
     char == ';'
 
 
-run =
-    Parser.run parser
-
-
 ignoreToSemi =
     succeed ()
         |. oneOrMore (not << isSemi)
@@ -313,3 +371,8 @@ oneOrMore isOk =
         |. chompIf isOk
         |. chompWhile isOk
         |> getChompedString
+
+
+joinPrepend : String -> List String -> String
+joinPrepend separator strings =
+    List.foldl (\a b -> separator ++ a ++ b) "" strings
