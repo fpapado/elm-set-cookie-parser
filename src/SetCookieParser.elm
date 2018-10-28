@@ -1,4 +1,4 @@
-module SetCookieParser exposing (Attribute(..), NameValue, SetCookie, attribute, attributes, nameValue, run)
+module SetCookieParser exposing (Attribute(..), NameValue, SetCookie, attribute, attributes, nameValue, parser, run)
 
 import Char
 import Parser
@@ -26,15 +26,23 @@ import Set
 type alias SetCookie =
     { name : String
     , value : String
-
-    -- , attributes : List Attribute
+    , attributes : List Attribute
     }
 
 
-setCookie : Parser SetCookie
-setCookie =
-    succeed identity
-        |= nameValue
+
+-- TODO: Multi
+
+
+parser : Parser SetCookie
+parser =
+    succeed SetCookie
+        |= name
+        |. symbol "="
+        |= value
+        -- TODO: Move first ";" to the attributes parser, per the spec
+        |. symbol ";"
+        |= attributes
 
 
 
@@ -97,7 +105,6 @@ type Attribute
 -- Loop until no ';' at the end
 -- Ignore unrecognised attributes
 -- Handle each attribute separately
--- TODO: Loop, looking for attributes
 
 
 attributes : Parser (List Attribute)
@@ -108,6 +115,8 @@ attributes =
         , separator = ";"
         , spaces = spaces
         , item = attribute
+
+        -- TODO: Decide what trailing actually does
         , trailing = Forbidden
         }
 
@@ -280,7 +289,7 @@ isSemi char =
 
 
 run =
-    Parser.run nameValue
+    Parser.run parser
 
 
 ignoreToSemi =

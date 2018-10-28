@@ -222,6 +222,24 @@ suite =
                         |> Expect.equal (Result.Ok expected)
                 )
             ]
+        , describe "Set-Cookie parsing"
+            [ test "Parses count=300; Max-Age=12345; HttpOnly"
+                (\_ ->
+                    let
+                        input =
+                            "count=300; Max-Age=12345; HttpOnly"
+
+                        expected =
+                            { name = "count"
+                            , value = "300"
+                            , attributes =
+                                [ SetCookieParser.MaxAge 12345, SetCookieParser.HttpOnly ]
+                            }
+                    in
+                    SetCookieParser.run input
+                        |> Expect.equal (Result.Ok expected)
+                )
+            ]
         ]
 
 
