@@ -1,4 +1,4 @@
-module SetCookieParser exposing (Attribute(..), NameValue, SetCookie, attribute, nameValue, run)
+module SetCookieParser exposing (Attribute(..), NameValue, SetCookie, attribute, attributes, nameValue, run)
 
 import Char
 import Parser
@@ -6,12 +6,15 @@ import Parser
         ( (|.)
         , (|=)
         , Parser
+        , Trailing(..)
         , chompIf
         , chompWhile
         , getChompedString
         , int
+        , loop
         , oneOf
         , problem
+        , sequence
         , spaces
         , succeed
         , symbol
@@ -24,12 +27,17 @@ type alias SetCookie =
     { name : String
     , value : String
 
-    -- , attributes: List Attribute
+    -- , attributes : List Attribute
     }
 
 
+setCookie : Parser SetCookie
+setCookie =
+    succeed identity
+        |= nameValue
 
--- setCookie : Parser SetCookie
+
+
 -- NAME-VALUE
 -- Each cookie begins with a name-value-pair, followed by zero or more attribute-value pairs.
 -- The (possibly empty) name string consists of the characters up
@@ -89,16 +97,24 @@ type Attribute
 -- Loop until no ';' at the end
 -- Ignore unrecognised attributes
 -- Handle each attribute separately
+-- TODO: Loop, looking for attributes
 
 
+attributes : Parser (List Attribute)
 attributes =
-    identity
+    sequence
+        { start = ""
+        , end = ""
+        , separator = ";"
+        , spaces = spaces
+        , item = attribute
+        , trailing = Forbidden
+        }
 
 
 attribute : Parser Attribute
 attribute =
     succeed identity
-        |. symbol ";"
         |= name
         |> Parser.andThen
             (\an ->

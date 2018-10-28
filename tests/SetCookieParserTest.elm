@@ -142,11 +142,11 @@ suite =
               --     [ test "; UnrecognisedAttribute=615"
               --     ]
               describe "The Expires Attribute"
-                [ test "Parses ; Expires=Monday, June 28, 2018"
+                [ test "Parses Expires=Monday, June 28, 2018"
                     (\_ ->
                         let
                             input =
-                                "; Expires=Monday, June 28, 2018"
+                                "Expires=Monday, June 28, 2018"
 
                             expected =
                                 SetCookieParser.Expires "Monday, June 28, 2018"
@@ -154,11 +154,11 @@ suite =
                         Parser.run SetCookieParser.attribute input
                             |> Expect.equal (Result.Ok expected)
                     )
-                , test "Parses ; expires=Monday, June 28, 2018"
+                , test "Parses expires=Monday, June 28, 2018"
                     (\_ ->
                         let
                             input =
-                                "; expires=Monday, June 28, 2018"
+                                "expires=Monday, June 28, 2018"
 
                             expected =
                                 SetCookieParser.Expires "Monday, June 28, 2018"
@@ -166,11 +166,11 @@ suite =
                         Parser.run SetCookieParser.attribute input
                             |> Expect.equal (Result.Ok expected)
                     )
-                , test "Parses ; Expires  =  Monday, June 28, 2018"
+                , test "Parses Expires  =  Monday, June 28, 2018"
                     (\_ ->
                         let
                             input =
-                                "; expires  =  Monday, June 28, 2018"
+                                "expires  =  Monday, June 28, 2018"
 
                             expected =
                                 SetCookieParser.Expires "Monday, June 28, 2018"
@@ -178,7 +178,7 @@ suite =
                         Parser.run SetCookieParser.attribute input
                             |> Expect.equal (Result.Ok expected)
                     )
-                , todo "Parses ; Expires=31688000  without trailing space. This probably needs us to parse the date, so that we can skip the extra bits."
+                , todo "Parses Expires=31688000  without trailing space. This probably needs us to parse the date, so that we can skip the extra bits."
                 , todo "Ignores invalid date"
                 ]
 
@@ -192,11 +192,11 @@ suite =
             -- , describe "The Domain Attribute" []
             -- , describe "The Path Attribute" []
             , describe "The Secure Attribute"
-                [ test "Parses ; Secure"
+                [ test "Parses Secure"
                     (\_ ->
                         let
                             input =
-                                "; Secure"
+                                "Secure"
 
                             expected =
                                 SetCookieParser.Secure
@@ -207,6 +207,20 @@ suite =
                 ]
 
             -- , describe "The HttpOnly Attribute" []
+            ]
+        , describe "Multiple attributes"
+            [ test "Parses Max-Age=12345; HttpOnly"
+                (\_ ->
+                    let
+                        input =
+                            "Max-Age=12345; HttpOnly"
+
+                        expected =
+                            [ SetCookieParser.MaxAge 12345, SetCookieParser.HttpOnly ]
+                    in
+                    Parser.run SetCookieParser.attributes input
+                        |> Expect.equal (Result.Ok expected)
+                )
             ]
         ]
 
