@@ -11,7 +11,6 @@ import Parser
         , chompWhile
         , getChompedString
         , int
-        , loop
         , oneOf
         , problem
         , sequence
