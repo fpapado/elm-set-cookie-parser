@@ -1,7 +1,16 @@
-module SetCookieParser exposing (Attribute(..), NameValue, SetCookie, attribute, attributes, fromString, nameValue, parser, toString)
+module SetCookieParser exposing
+    ( Attribute(..)
+    , NameValue
+    , SetCookie
+    , attribute
+    , attributes
+    , fromString
+    , nameValue
+    , parser
+    , toString
+    )
 
 import Char
-import Debug
 import Parser
     exposing
         ( (|.)
@@ -18,7 +27,6 @@ import Parser
         , spaces
         , succeed
         , symbol
-        , variable
         )
 import Set
 
@@ -30,11 +38,6 @@ type alias SetCookie =
     }
 
 
-
--- TODO: fromMultiString
--- TODO: toString
-
-
 {-| Attempt to convert a String representation of a Set-Cookie Header to a SetCookie
 -}
 fromString : String -> Result (List Parser.DeadEnd) SetCookie
@@ -42,13 +45,13 @@ fromString =
     Parser.run parser
 
 
-{-| Attempt to convert a string representation of a series of Set-Cookie Headers to a list of SetCookie
-NOTE: If the Set-Cookie Header strings are already separate, it is recommended that you use fromString multiple times instead.
-TODO: Decide whether it should be Result x (List SetCookie) or List (Result x SetCookie)
--}
-fromMultiString : String -> Result (List Parser.DeadEnd) (List SetCookie)
-fromMultiString =
-    Debug.todo "Not yet implemented"
+
+-- Attempt to convert a string representation of a series of Set-Cookie Headers to a list of SetCookie
+-- NOTE: If the Set-Cookie Header strings are already separate, it is recommended that you use fromString multiple times instead.
+-- TODO: Decide whether it should be Result x (List SetCookie) or List (Result x SetCookie)
+-- fromMultiString : String -> Result (List Parser.DeadEnd) (List SetCookie)
+-- fromMultiString =
+-- Debug.todo "Not yet implemented"
 
 
 {-| Serialise a SetCookie to a Set-Cookie Header string
