@@ -43,8 +43,7 @@ suite =
                             "count 100"
                     in
                     Parser.run SetCookieParser.nameValue input
-                        |> isErr
-                        |> Expect.true "Expected the header parse to be rejected"
+                        |> Expect.err
                 )
             , test "name=value;"
                 (\_ ->
@@ -69,8 +68,7 @@ suite =
                                 { name = "", value = "100" }
                         in
                         Parser.run SetCookieParser.nameValue input
-                            |> isErr
-                            |> Expect.true "Expected the parse to be rejected"
+                            |> Expect.err
                     )
                 , test "Rejects =value;"
                     (\_ ->
@@ -82,8 +80,7 @@ suite =
                                 { name = "", value = "100" }
                         in
                         Parser.run SetCookieParser.nameValue input
-                            |> isErr
-                            |> Expect.true "Expected the parse to be rejected"
+                            |> Expect.err
                     )
                 , test "Rejects ="
                     (\_ ->
@@ -95,8 +92,7 @@ suite =
                                 { name = "", value = "" }
                         in
                         Parser.run SetCookieParser.nameValue input
-                            |> isErr
-                            |> Expect.true "Expected the parse to be rejected"
+                            |> Expect.err
                     )
                 ]
             , test "name=;"
@@ -252,12 +248,39 @@ suite =
                                 [ SetCookieParser.MaxAge 12345, SetCookieParser.HttpOnly ]
                             }
 
-                        expected =
-                            "count=300; HttpOnly; Max-Age=12345"
+                        possibilities =
+                            [ "count=300; Max-Age=12345; HttpOnly"
+                            , "count=300; HttpOnly; Max-Age=12345"
+                            ]
                     in
                     SetCookieParser.toString input
-                        |> Expect.equal expected
+                        |> equalOneOf possibilities
                 )
+            , test "Can round-trip values"
+                (\_ ->
+                    let
+                        inputString =
+                            "count=300; Max-Age=12345; HttpOnly"
+
+                        parsed =
+                            SetCookieParser.fromString inputString
+
+                        possibilities =
+                            [ "count=300; Max-Age=12345; HttpOnly"
+                            , "count=300; HttpOnly; Max-Age=12345"
+                            ]
+
+                        serialized =
+                            case parsed of
+                                Ok parsedOk ->
+                                    SetCookieParser.toString parsedOk
+
+                                Err _ ->
+                                    ""
+                    in
+                    equalOneOf possibilities serialized
+                )
+            , todo "Can round-trip values that include Expires with trailing spaces"
             ]
         ]
 
@@ -266,11 +289,7 @@ suite =
 -- UTIL
 
 
-isErr : Result error data -> Bool
-isErr res =
-    case res of
-        Ok _ ->
-            False
-
-        Err _ ->
-            True
+equalOneOf : List subject -> subject -> Expectation
+equalOneOf possibilities actual =
+    List.any (\a -> a == actual) possibilities
+        |> Expect.true "Expected at least one of the possible serializations."
