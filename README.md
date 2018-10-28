@@ -21,11 +21,11 @@ Mostly not.
 
 There is probably no reason to want to parse this header on the client-side of a web app, since the browser does that already.
 Similarly, on the server, there is more behaviour tied to Cookies, so your server most likely handles parsing already.
-You also probably don't want to store the cookies in scripts in the first place.
+You also probably don't want to store/handle the cookies in scripts in the first place.
 
-On my part, I just felt like trying out the Elm Parser API, because it looked fun! And the Set-Cookie header was giving me pain recently, so it was a good chance to demistify it.
+Personally, I felt like trying out the Elm Parser API, because it looked fun! And the Set-Cookie header was giving me pain on another project recently, so it was a good chance to demystify it.
 
-If you ever do want to parse or understand the Set-Cookie header, I hope this can be a lightweight, readable version :)
+If you ever want to parse or understand the Set-Cookie header, I hope this can be a lightweight, readable version :)
 
 ## Development
 
